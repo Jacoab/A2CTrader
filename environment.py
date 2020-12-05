@@ -11,8 +11,11 @@ class ActionType(Enum):
 class Environment:
 
     def __init__(self, funds, max_shares, *argv):
+        self.step_num = 0
+        self.day_index = self.step_num + 4
+
         holdings = [0 for _ in argv]
-        opening_prices = [arg['Open'][0] for arg in argv]
+        opening_prices = [arg['Open'][self.day_index] for arg in argv]
         opening_avgs = [0.0 for _ in argv]
 
         self.share_amounts = [i for i in range(max_shares + 1)]
@@ -21,17 +24,16 @@ class Environment:
         self.buyable_stocks = {stock.name: stock for stock in argv}
         self.holdings_name_list = list(self.buyable_stocks.keys())
         self.num_of_equities = len(argv)
-        self.prev_5_opens = np.zeros([self.num_of_equities, 5])
+        self.prev_5_opens = np.array([stock['Open'][0:5] for stock in argv])
 
         self.state = np.array([funds, 0.0] + holdings + opening_prices + opening_avgs)
         self.holdings_range = (2, 2 + len(argv))
-        self.opening_prices_range = (self.holdings_range[1] + 1,
-                                     self.holdings_range[1] + 1 + self.num_of_equities)
-        self.opening_avgs_range = (self.opening_prices_range[1] + 1,
-                                   self.opening_prices_range[1] + 1 + self.num_of_equities)
+        self.opening_prices_range = (self.holdings_range[1],
+                                     self.holdings_range[1] + self.num_of_equities)
+        self.opening_avgs_range = (self.opening_prices_range[1],
+                                   self.opening_prices_range[1] + self.num_of_equities)
 
-        self.step_num = 0
-        self.episode = 0
+        self.set_past_5_days_open_avg(self.calc_past_5_days_open_avg())
 
     '''
     def reset(self, funds):
@@ -49,18 +51,12 @@ class Environment:
         if amount_of_shares not in self.share_amounts:
             raise ValueError('{} is not a valid amount of shares to buy'.format(amount_of_shares))
 
-        price_per_share = self.buyable_stocks[stock]['Open'][self.step_num]
+        price_per_share = self.buyable_stocks[stock]['Open'][self.day_index]
         holdings = self.get_holdings()
         holdings_index = self.holdings_name_list.index(stock)
         funds = self.get_funds()
 
-        print('STEP:')
-        print('  ', holdings[holdings_index])
-        print('  ', price_per_share*amount_of_shares)
-        print('  ', funds)
-
         if action_type == ActionType.BUY:
-            print(price_per_share*amount_of_shares)
             if price_per_share*amount_of_shares >= funds:
                 return None
             else:
@@ -74,9 +70,12 @@ class Environment:
             pass
 
         self.step_num += 1
-        new_opens = np.array([stock['Open'][self.step_num] for stock in self.buyable_stocks.values()])
+        self.day_index += 1
+        new_opens = np.array([stock['Open'][self.day_index] for stock in self.buyable_stocks.values()])
         self.set_opening_prices(new_opens)
         self.push_prev_5_opens(new_opens)
+        past_5_day_avgs = self.calc_past_5_days_open_avg()
+        self.set_past_5_days_open_avg(past_5_day_avgs)
         return self.state
 
     def buy(self, stock, shares, price_per_share):
@@ -128,10 +127,10 @@ class Environment:
         self.prev_5_opens[:, 0] = new_opens
 
     def set_funds(self, funds):
-        self.state[0] = funds
+        self.state[0] = truncate(funds, 2) # Possibly round instead
 
     def set_portfolio_val(self, value):
-        self.state[1] = value
+        self.state[1] = value # NOTE: Possibly round to two decimal places???
 
     def set_holdings(self, holdings):
         self.state[self.holdings_range[0]: self.holdings_range[1]] = holdings
@@ -140,7 +139,8 @@ class Environment:
         self.state[self.opening_prices_range[0]: self.opening_prices_range[1]] = opening_prices
 
     def set_past_5_days_open_avg(self, avgs):
-        self.state[self.opening_avgs_range[0]: self.opening_avgs_range[1]] = avgs
+        trunc_avgs = np.array([truncate(val, 2) for val in avgs])
+        self.state[self.opening_avgs_range[0]: self.opening_avgs_range[1]] = trunc_avgs
 
     def get_funds(self):
         return self.state[0]
@@ -156,3 +156,12 @@ class Environment:
 
     def get_past_5_days_open_avg(self):
         return self.state[self.opening_avgs_range[0]: self.opening_avgs_range[1]]
+
+
+def truncate(f, n):
+    '''Truncates/pads a float f to n decimal places without rounding'''
+    s = '{}'.format(f)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(f, n)
+    i, p, d = s.partition('.')
+    return float('.'.join([i, (d+'0'*n)[:n]]))
