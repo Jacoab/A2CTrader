@@ -1,11 +1,16 @@
+import random
+
 import numpy as np
 from enum import Enum
 
 
-class ActionType(Enum):
-    BUY = 0
-    SELL = 1
-    HOLD = 2
+#class ActionType(Enum):
+#    BUY = 0
+#    SELL = 1
+#    HOLD = 2
+
+
+ActionType = ['BUY', 'SELL', 'HOLD']
 
 
 class Environment:
@@ -56,14 +61,14 @@ class Environment:
         holdings_index = self.holdings_name_list.index(stock)
         funds = self.get_funds()
 
-        if action_type == ActionType.BUY:
+        if action_type == 'BUY':
             if price_per_share*amount_of_shares >= funds:
-                return None
+                return np.array([]), 0.0, True
             else:
                 self.buy(stock, amount_of_shares, price_per_share)
-        elif action_type == ActionType.SELL:
+        elif action_type == 'SELL':
             if amount_of_shares > holdings[holdings_index]:
-                return None
+                return np.array([]), 0.0, True
             else:
                 self.sell(stock, amount_of_shares, price_per_share)
         else:
@@ -71,12 +76,16 @@ class Environment:
 
         self.step_num += 1
         self.day_index += 1
+
         new_opens = np.array([stock['Open'][self.day_index] for stock in self.buyable_stocks.values()])
         self.set_opening_prices(new_opens)
         self.push_prev_5_opens(new_opens)
         past_5_day_avgs = self.calc_past_5_days_open_avg()
         self.set_past_5_days_open_avg(past_5_day_avgs)
-        return self.state
+
+        reward = self.calc_sparse_reward(funds)
+
+        return self.state, reward, False
 
     def buy(self, stock, shares, price_per_share):
         funds = self.get_funds()
@@ -107,6 +116,9 @@ class Environment:
     def hold(self):
         # NOTE: This method might not be necessary
         pass
+
+    def calc_sparse_reward(self, prev_funds):
+        return (self.get_funds() - prev_funds) / self.init_funds
 
     def calc_portfolio_value(self):
         value = 0.0
@@ -156,6 +168,10 @@ class Environment:
 
     def get_past_5_days_open_avg(self):
         return self.state[self.opening_avgs_range[0]: self.opening_avgs_range[1]]
+
+
+def sample_action_space():
+    return random.sample(ActionType, 1)
 
 
 def truncate(f, n):
