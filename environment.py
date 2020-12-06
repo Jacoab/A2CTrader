@@ -10,7 +10,7 @@ from enum import Enum
 #    HOLD = 2
 
 
-ActionType = ['BUY', 'SELL', 'HOLD']
+ActionType = ['BUY', 'SELL', 'HOLD', '']
 
 
 class Environment:
@@ -55,6 +55,10 @@ class Environment:
             raise ValueError('{} is not a valid action type'.format(action_type))
         if amount_of_shares not in self.share_amounts:
             raise ValueError('{} is not a valid amount of shares to buy'.format(amount_of_shares))
+
+        if action_type == 'HOLD':
+            reward = self.calc_sparse_reward(self.get_funds())
+            return self.state, reward, False
 
         price_per_share = self.buyable_stocks[stock]['Open'][self.day_index]
         holdings = self.get_holdings()
@@ -171,7 +175,7 @@ class Environment:
 
 
 def sample_action_space():
-    return random.sample(ActionType, 1)
+    return random.choice(ActionType)
 
 
 def truncate(f, n):
