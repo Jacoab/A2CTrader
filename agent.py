@@ -47,6 +47,22 @@ class DQNAgent:
             return
 
         samples = random.sample(self.memory, batch_size)
+
+        states = np.array([np.array(sample[0]) for sample in samples])
+        actions = np.array([sample[1] for sample in samples])
+        rewards = np.array([sample[2] for sample in samples])
+        next_states = np.array([np.array(sample[3]) for sample in samples])
+        done = np.array([sample[4] for sample in samples])
+
+        target = rewards + self.gamma * np.amax(self.model.predict(next_states), axis=1)
+        target[done] = rewards[done]
+
+        target_f = self.model.predict(states)
+        target_f[range(batch_size), actions] = target
+
+        self.model.fit(states, target_f, epochs=1, verbose=0)
+
+        '''
         for sample in samples:
             state, action, reward, new_state, done = sample
             state = np.array([state])
@@ -59,6 +75,28 @@ class DQNAgent:
                     self.target_model.predict(new_state)[0])
                 target[0, :][action] = reward + Q_future * self.gamma
             self.model.fit(state, target, epochs=1, verbose=0)
+        '''
+
+    '''
+    def replay(self):
+        batch_size = 32
+        if len(self.memory) < batch_size:
+            return
+
+        samples = random.sample(self.memory, batch_size)
+        for sample in samples:
+            state, action, reward, new_state, done = sample
+            state = np.array([state])
+            new_state = np.array([new_state])
+            target = self.target_model.predict(state)
+            if done:
+                target[0, :][action] = reward
+            else:
+                Q_future = max(
+                    self.target_model.predict(new_state)[0])
+                target[0, :][action] = reward + Q_future * self.gamma
+            self.model.fit(state, target, epochs=1, verbose=0)
+    '''
 
     def target_train(self):
         weights = self.model.get_weights()
@@ -72,8 +110,10 @@ class DQNAgent:
         self.epsilon = max(self.epsilon_min, self.epsilon)
         state = np.array([state])
         if np.random.random() < self.epsilon:
+            print('  random act')
             return random.randint(0, 4)
 
+        print('  nn act')
         prediction = self.model.predict(state)[0]
         action = np.argmax(prediction)
         return action

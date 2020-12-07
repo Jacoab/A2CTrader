@@ -47,7 +47,7 @@ def main():
             print('  Action: ', action)
             print('  Stock: ', stock)
             new_state, reward, illegal_action = env.step(action, stock, 1)
-            reward = reward if not illegal_action else -1000
+            reward = reward if not illegal_action else -10000
             print('  Reward: ', reward)
             dqn_agent.remember(cur_state, action_num,
                                reward, new_state, illegal_action)

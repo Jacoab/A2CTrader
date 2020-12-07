@@ -67,12 +67,12 @@ class Environment:
 
         if action_type == 'BUY':
             if price_per_share*amount_of_shares >= funds:
-                return np.array([]), 0.0, True
+                return self.state, 0.0, True
             else:
                 self.buy(stock, amount_of_shares, price_per_share)
         elif action_type == 'SELL':
             if amount_of_shares > holdings[holdings_index]:
-                return np.array([]), 0.0, True
+                return self.state, 0.0, True
             else:
                 self.sell(stock, amount_of_shares, price_per_share)
         else:
