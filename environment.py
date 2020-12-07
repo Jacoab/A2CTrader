@@ -122,7 +122,12 @@ class Environment:
         pass
 
     def calc_sparse_reward(self, prev_funds):
-        return (self.get_funds() - prev_funds) / self.init_funds
+        reward = (self.get_funds() - prev_funds) / self.init_funds
+
+        if reward > 0:
+            reward += 1    # positive rewards are rare so they should be worth more
+
+        return reward
 
     def calc_portfolio_value(self):
         value = 0.0

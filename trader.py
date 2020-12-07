@@ -63,6 +63,11 @@ def main():
         print('Profit: ', start_funds - env.get_funds())
         env = Environment(100000, 1, stock1, stock2)
 
+    print("Average Profit: ", sum(profits)/len(profits))
+    menu_option2 = input("Press 0 to quit, press 1 to save to model to location/ ")
+    if menu_option2 == "1":
+        fp = input("Enter the folder name to save this model to ")
+        dqn_agent.save_model(fp)
 
 if __name__ == "__main__":
     main()

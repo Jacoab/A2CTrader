@@ -26,10 +26,16 @@ class DQNAgent:
         self.model = self.create_model()
         # "hack" implemented by DeepMind to improve convergence
         self.target_model = self.create_model()
+        self.filepath = "/home/raymond.wu/stock_trader/"
+        self.filename = "/saved_model.pb"
 
     def load_model(self):
-        fn = input("Enter the filename of the model")
-        self.model = load_model(filepath=fn)
+        fp = input("Enter the name of your model folder ")
+        # change below
+        fullpath = self.filepath + fp + self.filename
+        # print(fullpath)
+        #change fullpath to fp
+        self.model = load_model(fullpath)
 
     def create_model(self):
         model = Sequential()
@@ -124,4 +130,6 @@ class DQNAgent:
         return action
 
     def save_model(self, fn):
-        self.model.save(fn)
+        fullpath = self.filepath + "saved_model.pb"
+        #change below
+        self.model.save(fullpath)
