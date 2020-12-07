@@ -5,6 +5,7 @@ import random
 from keras import Sequential, Input
 from keras.layers import Dense
 from keras.optimizers import Adam
+from keras.models import *
 import numpy as np
 
 
@@ -25,6 +26,10 @@ class DQNAgent:
         self.model = self.create_model()
         # "hack" implemented by DeepMind to improve convergence
         self.target_model = self.create_model()
+
+    def load_model(self):
+        fn = input("Enter the filename of the model")
+        self.model = load_model(filepath=fn)
 
     def create_model(self):
         model = Sequential()
