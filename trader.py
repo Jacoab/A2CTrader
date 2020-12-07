@@ -18,7 +18,11 @@ def main():
     trials = 100
     trial_len = 1460
     updateTargetNetwork = 1000
+    profits = []
     dqn_agent = DQNAgent(env, stock1.name, stock2.name)
+    menu_option = input("Press 0 to start fresh, Press 1 to load a model from filepath ")
+    if menu_option == "1":
+        dqn_agent.load_model()
     steps = []
     for trial in range(trials):
         print('Trial ', trial)
@@ -61,8 +65,13 @@ def main():
                 break
 
         print('Profit: ', start_funds - env.get_funds())
+        profits.append(start_funds - env.get_funds())
         env = Environment(100000, 1, stock1, stock2)
-
+    print("Average Profit: ", sum(profits)/len(profits))
+    menu_option2 = input("Press 0 to quit, press 1 to save to model to location/ ")
+    if menu_option2 == "1":
+        fp = input("Enter the filepath to save this model to ")
+        dqn_agent.save_model(fp)
 
 if __name__ == "__main__":
     main()
