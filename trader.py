@@ -5,11 +5,11 @@ import random
 
 
 # possibly use denoised version of data sets
-stock1 = pd.read_csv('amd-train.csv')
-stock2 = pd.read_csv('nvda-train.csv')
+stock1 = pd.read_csv('adobe-train.csv')
+stock2 = pd.read_csv('apple-train.csv.csv')
 
-stock1.name = 'AMD'
-stock2.name = 'NVDA'
+stock1.name = 'ADBE'
+stock2.name = 'AAPL'
 
 
 def main():
