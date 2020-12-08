@@ -5,11 +5,11 @@ import random
 
 
 # possibly use denoised version of data sets
-stock1 = pd.read_csv('adobe-train.csv')
-stock2 = pd.read_csv('apple-train.csv.csv')
+stock1 = pd.read_csv('amd-train.csv')
+stock2 = pd.read_csv('nvda-train.csv')
 
-stock1.name = 'ADBE'
-stock2.name = 'AAPL'
+stock1.name = 'AMD'
+stock2.name = 'NVDA'
 
 
 def main():
@@ -30,7 +30,8 @@ def main():
         'holds_per_trial': [],
         'illegal_action_trial': [],
         'profits_per_trial': [],
-        'ranges_per_trial': []
+        'ranges_per_trial': [],
+        'good_profits_and_range': []
     }
 
     dqn_agent = DQNAgent(env, stock1.name, stock2.name)
@@ -51,6 +52,7 @@ def main():
         stock2_sells = 0
         holds = 0
         illegal_action = False
+        returns = []
 
         for step in range(trial_len):
             action_num = dqn_agent.act(cur_state)
@@ -74,11 +76,14 @@ def main():
             else:
                 action, stock = None, None
 
+            prev_funds = env.get_funds()
             print('Step {}:'.format(step))
             print('  Action: ', action)
             print('  Stock:  ', stock)
             new_state, reward, illegal_action = env.step(action, stock, 1)
             reward = reward if not illegal_action else -10000
+            new_funds = env.get_funds()
+            returns.append(new_funds-prev_funds)
             print('  Reward: ', reward)
             dqn_agent.remember(cur_state, action_num,
                                reward, new_state, illegal_action)
@@ -92,7 +97,13 @@ def main():
                 break
 
         profit = start_funds - env.get_funds()
+        df_range = (env.init_day_index, env.init_day_index + trial_len)
         print('Profit: ', start_funds - env.get_funds())
+
+        if profit >= 5000.00:
+            action_info['good_profits_and_range'].append((df_range, returns))
+            print(action_info['good_profits_and_range'])
+
         action_info['profits_per_trial'].append(profit)
 
         action_info['s1_buys_per_trial'].append(stock1_buys)
