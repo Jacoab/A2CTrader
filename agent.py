@@ -2,7 +2,8 @@ from collections import deque
 from environment import sample_action_space
 import random
 
-from keras import Sequential, Input
+from keras import Sequential
+import keras
 from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.models import *
@@ -21,7 +22,7 @@ class DQNAgent:
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-        self.learning_rate = 0.01
+        self.learning_rate = 0.0001
         self.tau = 0.05
         self.model = self.create_model()
         # "hack" implemented by DeepMind to improve convergence
@@ -42,7 +43,7 @@ class DQNAgent:
         state_shape = self.env.state.shape
         model.add(Dense(32, input_shape=state_shape,
                         activation="relu"))
-        model.add(Dense(48, activation="relu"))
+        model.add(Dense(24, activation="relu"))
         model.add(Dense(24, activation="relu"))
         model.add(Dense(5))
         model.compile(loss="mean_squared_error",
@@ -130,6 +131,9 @@ class DQNAgent:
         return action
 
     def save_model(self, fn):
-        fullpath = self.filepath + "saved_model.pb"
+        fullpath = self.filepath #+ "saved_model.pb"
         #change below
+        self.model.save(fullpath)
+
+    def custom_save_model(self, fullpath):
         self.model.save(fullpath)
