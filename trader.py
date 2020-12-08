@@ -5,11 +5,11 @@ import random
 
 
 # possibly use denoised version of data sets
-stock1 = pd.read_csv('adobe-train.csv')
-stock2 = pd.read_csv('apple-train.csv')
+stock1 = pd.read_csv('amd-train.csv')
+stock2 = pd.read_csv('nvda-train.csv')
 
-stock1.name = 'ADBE'
-stock2.name = 'AAPL'
+stock1.name = 'AMD'
+stock2.name = 'NVDA'
 
 
 def main():
@@ -22,14 +22,15 @@ def main():
     trials = 100
     updateTargetNetwork = 1000
 
-    profits = []
     action_info = {
         's1_buys_per_trial': [],
         's1_sells_per_trial': [],
         's2_buys_per_trial': [],
         's2_sells_per_trial': [],
         'holds_per_trial': [],
-        'illegal_action_trial': []
+        'illegal_action_trial': [],
+        'profits_per_trial': [],
+        'ranges_per_trial': []
     }
 
     dqn_agent = DQNAgent(env, stock1.name, stock2.name)
@@ -92,7 +93,7 @@ def main():
 
         profit = start_funds - env.get_funds()
         print('Profit: ', start_funds - env.get_funds())
-        profits.append(profit)
+        action_info['profits_per_trial'].append(profit)
 
         action_info['s1_buys_per_trial'].append(stock1_buys)
         action_info['s1_sells_per_trial'].append(stock1_sells)
@@ -100,11 +101,12 @@ def main():
         action_info['s2_sells_per_trial'].append(stock2_sells)
         action_info['holds_per_trial'].append(holds)
         action_info['illegal_action_trial'].append(illegal_action)
+        action_info['ranges_per_trial'].append((env.init_day_index, env.init_day_index + trial_len))
 
         n = random.randint(0, len(stock1) - trial_len)
         env = Environment(100000, 1, trial_len, stock1, stock2)
 
-    print("Average Profit: ", sum(profits)/len(profits))
+    print("Average Profit: ", sum(action_info['profits_per_trial'])/len(action_info['profits_per_trial']))
     data_file_name = input('Please type the name of the file you would like to save the action info to: ')
     menu_option2 = input("Press 0 to quit, press 1 to save to model to location/ ")
     if menu_option2 == "1":

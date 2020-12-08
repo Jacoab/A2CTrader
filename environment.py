@@ -20,6 +20,7 @@ class Environment:
 
         self.step_num = 0
         self.day_index = n + 4
+        self.init_day_index = self.day_index
 
         holdings = [0 for _ in argv]
         opening_prices = [arg['Open'][self.day_index] for arg in argv]
