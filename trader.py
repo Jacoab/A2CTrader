@@ -30,7 +30,8 @@ def main():
         'holds_per_trial': [],
         'illegal_action_trial': [],
         'profits_per_trial': [],
-        'ranges_per_trial': [],
+        'range1_per_trial': [],
+        'range2_per_trial': [],
         'good_profits_and_range': []
     }
 
@@ -112,7 +113,8 @@ def main():
         action_info['s2_sells_per_trial'].append(stock2_sells)
         action_info['holds_per_trial'].append(holds)
         action_info['illegal_action_trial'].append(illegal_action)
-        action_info['ranges_per_trial'].append((env.init_day_index, env.init_day_index + trial_len))
+        action_info['range1_per_trial'].append(env.init_day_index)
+        action_info['range2_per_trial'].append(env.init_day_index)
 
         n = random.randint(0, len(stock1) - trial_len)
         env = Environment(100000, 1, trial_len, stock1, stock2)
