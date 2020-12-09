@@ -12,6 +12,7 @@ import numpy as np
 
 class DQNAgent:
     def __init__(self, env, stock1_name, stock2_name):
+        # Deep Q network agent with expierence replay
         self.env = env
         self.memory = deque(maxlen=2000)
 
@@ -30,6 +31,7 @@ class DQNAgent:
         self.filepath = "/home/raymond.wu/stock_trader/"
         self.filename = "/saved_model.pb"
 
+    # Loads a model using self.filepath
     def load_model(self):
         fp = input("Enter the name of your model folder ")
         # change below
@@ -38,6 +40,7 @@ class DQNAgent:
         #change fullpath to fp
         self.model = load_model(fullpath)
 
+    # Creates the model using keras
     def create_model(self):
         model = Sequential()
         state_shape = self.env.state.shape
@@ -50,9 +53,11 @@ class DQNAgent:
                       optimizer=Adam(lr=self.learning_rate))
         return model
 
+    # saves state, action, reward, newstate, done pairs
     def remember(self, state, action, reward, new_state, done):
         self.memory.append([state, action, reward, new_state, done])
 
+    # Expierence replay with vectorized operations
     def replay(self):
         batch_size = 32
         if len(self.memory) < batch_size:
@@ -74,42 +79,7 @@ class DQNAgent:
 
         self.model.fit(states, target_f, epochs=1, verbose=0)
 
-        '''
-        for sample in samples:
-            state, action, reward, new_state, done = sample
-            state = np.array([state])
-            new_state = np.array([new_state])
-            target = self.target_model.predict(state)
-            if done:
-                target[0, :][action] = reward
-            else:
-                Q_future = max(
-                    self.target_model.predict(new_state)[0])
-                target[0, :][action] = reward + Q_future * self.gamma
-            self.model.fit(state, target, epochs=1, verbose=0)
-        '''
-
-    '''
-    def replay(self):
-        batch_size = 32
-        if len(self.memory) < batch_size:
-            return
-
-        samples = random.sample(self.memory, batch_size)
-        for sample in samples:
-            state, action, reward, new_state, done = sample
-            state = np.array([state])
-            new_state = np.array([new_state])
-            target = self.target_model.predict(state)
-            if done:
-                target[0, :][action] = reward
-            else:
-                Q_future = max(
-                    self.target_model.predict(new_state)[0])
-                target[0, :][action] = reward + Q_future * self.gamma
-            self.model.fit(state, target, epochs=1, verbose=0)
-    '''
-
+    # Transfers weights to target network
     def target_train(self):
         weights = self.model.get_weights()
         target_weights = self.target_model.get_weights()
@@ -117,6 +87,7 @@ class DQNAgent:
             target_weights[i] = weights[i]
         self.target_model.set_weights(target_weights)
 
+    # generates an action, generates a random action if epsilon is less than a random number
     def act(self, state):
         self.epsilon *= self.epsilon_decay
         self.epsilon = max(self.epsilon_min, self.epsilon)
@@ -130,10 +101,12 @@ class DQNAgent:
         action = np.argmax(prediction)
         return action
 
+    # Saves model to self.fullpath listed
     def save_model(self, fn):
         fullpath = self.filepath #+ "saved_model.pb"
         #change below
         self.model.save(fullpath)
 
+    # Saves model to specified path
     def custom_save_model(self, fullpath):
         self.model.save(fullpath)

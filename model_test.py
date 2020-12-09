@@ -4,8 +4,8 @@ import numpy as np
 from environment import Environment
 
 model = tf.keras.models.load_model('complex_model_0')
-stock1 = pd.read_csv('adobe-test.csv')
-stock2 = pd.read_csv('apple-test.csv')
+stock1 = pd.read_csv('data/adobe-test.csv')
+stock2 = pd.read_csv('data/apple-test.csv')
 
 stock1.name = 'ADBE'
 stock2.name = 'AAPL'

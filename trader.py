@@ -4,9 +4,8 @@ import pandas as pd
 import random
 
 
-# possibly use denoised version of data sets
-stock1 = pd.read_csv('amd-train.csv')
-stock2 = pd.read_csv('nvidia-train.csv')
+stock1 = pd.read_csv('data/amd-train.csv')
+stock2 = pd.read_csv('data/nvidia-train.csv')
 
 stock1.name = 'AMD'
 stock2.name = 'NVDA'
@@ -14,13 +13,9 @@ stock2.name = 'NVDA'
 
 def main():
     trial_len = 1030
-    n = random.randint(0, len(stock1) - trial_len)
 
     env = Environment(100000, 1, trial_len, stock1, stock2)
-    gamma = 0.9
-    epsilon = .95
     trials = 100
-    updateTargetNetwork = 1000
 
     action_info = {
         's1_buys_per_trial': [],
@@ -58,6 +53,7 @@ def main():
             action_num = dqn_agent.act(cur_state)
             action, stock = None, None
 
+            # Get action from Deep Q Net output
             if action_num == 0:
                 action, stock = 'BUY', stock1.name
                 stock1_buys += 1
