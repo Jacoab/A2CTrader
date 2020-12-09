@@ -28,17 +28,12 @@ class DQNAgent:
         self.model = self.create_model()
         # "hack" implemented by DeepMind to improve convergence
         self.target_model = self.create_model()
-        self.filepath = "/home/raymond.wu/stock_trader/"
-        self.filename = "/saved_model.pb"
 
     # Loads a model using self.filepath
     def load_model(self):
         fp = input("Enter the name of your model folder ")
         # change below
-        fullpath = self.filepath + fp + self.filename
-        # print(fullpath)
-        #change fullpath to fp
-        self.model = load_model(fullpath)
+        self.model = load_model(fp)
 
     # Creates the model using keras
     def create_model(self):
@@ -100,12 +95,6 @@ class DQNAgent:
         prediction = self.model.predict(state)[0]
         action = np.argmax(prediction)
         return action
-
-    # Saves model to self.fullpath listed
-    def save_model(self, fn):
-        fullpath = self.filepath #+ "saved_model.pb"
-        #change below
-        self.model.save(fullpath)
 
     # Saves model to specified path
     def custom_save_model(self, fullpath):

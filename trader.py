@@ -30,7 +30,7 @@ def main():
     }
 
     dqn_agent = DQNAgent(env, stock1.name, stock2.name)
-    menu_option = input("Press 0 to start fresh, Press 1 to load a model from filepath ")
+    menu_option = input("Press 1 to load a model from filepath. Press any other button to start a new model ")
     if menu_option == "1":
         dqn_agent.load_model()
     steps = []
